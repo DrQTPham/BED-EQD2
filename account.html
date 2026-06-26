@@ -64,6 +64,78 @@ body{font-family:'Inter',sans-serif;min-height:100vh;display:flex;align-items:ce
 </div>
 <script>
 const firebaseConfig = {
+  apiKey:            "AIzaSyCOPzVG-_35mhC5AVGkU1LciHtx7XS3PGY",
+  authDomain:        "bed-eqd2.firebaseapp.com",
+  projectId:         "bed-eqd2",
+  storageBucket:     "bed-eqd2.firebasestorage.app",
+  messagingSenderId: "1056348118909",
+  appId:             "1:1056348118909:web:67a80624c36985b9f83614"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+
+auth.onAuthStateChanged(user => { if(user) window.location.href='bed_index.html'; });
+
+function showLoading(v){ document.getElementById('loading').style.display=v?'flex':'none'; }
+function showError(msg){ const el=document.getElementById('errorMsg'); el.textContent=msg; el.style.display='block'; }
+function clearError(){ document.getElementById('errorMsg').style.display='none'; }
+
+async function loginEmail(){
+  clearError();
+  const email=document.getElementById('email').value.trim();
+  const password=document.getElementById('password').value;
+  if(!email||!password) return showError('Vui lòng nhập email và mật khẩu.');
+  showLoading(true);
+  try {
+    await auth.signInWithEmailAndPassword(email,password);
+  } catch(err){
+    showLoading(false);
+    const msgs={'auth/wrong-password':'Mật khẩu không chính xác.','auth/user-not-found':'Email không tồn tại.','auth/invalid-email':'Email không hợp lệ.','auth/too-many-requests':'Quá nhiều lần thử.'};
+    showError(msgs[err.code]||'Lỗi: '+err.message);
+  }
+}
+async function loginGoogle(){
+  clearError(); showLoading(true);
+  try {
+    await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
+  } catch(err){
+    showLoading(false);
+    if(err.code!=='auth/popup-closed-by-user') showError('Lỗi: '+err.message);
+  }
+}
+document.addEventListener('keydown',e=>{ if(e.key==='Enter') loginEmail(); });
+</script>
+</body>
+</html></style>
+</head>
+<body>
+<div class="loading-overlay" id="loading"><div class="spinner"></div></div>
+<div class="card">
+  <div class="logos">
+    <img src="logo108.png" alt="BV 108">
+    <img src="logohust.png" alt="BKHN">
+  </div>
+  <div class="title">BED & EQD2 Calculator</div>
+  <div class="subtitle">Công cụ tính toán liều sinh học xạ trị<br>Đăng nhập để sử dụng</div>
+  <div class="field">
+    <label>Email</label>
+    <input type="email" id="email" placeholder="email@hospital.vn" autocomplete="email">
+  </div>
+  <div class="field">
+    <label>Mật khẩu</label>
+    <input type="password" id="password" placeholder="••••••••" autocomplete="current-password">
+  </div>
+  <button class="btn-login" id="btnLogin" onclick="loginEmail()">Đăng nhập</button>
+  <div class="divider">hoặc</div>
+  <button class="btn-google" onclick="loginGoogle()">
+    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G">
+    Đăng nhập bằng Google
+  </button>
+  <div class="error-msg" id="errorMsg"></div>
+  <div class="footer-note">TS. Phạm Quang Trung · BV Trung ương Quân đội 108<br>Chỉ dành cho nhân viên y tế được cấp quyền</div>
+</div>
+<script>
+const firebaseConfig = {
   apiKey:            "AIzaSyDc6A45Nh2tlTO-q3nqHEqTjCHhaLpRBn8",
   authDomain:        "caos-v1.firebaseapp.com",
   projectId:         "caos-v1",
