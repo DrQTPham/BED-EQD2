@@ -447,12 +447,12 @@ canvas{border-radius:8px;border:1px solid var(--border);display:block;width:100%
 <script>
 // ── Firebase & Auth ───────────────────────────────────────────
 const firebaseConfig = {
-  apiKey:            "AIzaSyDc6A45Nh2tlTO-q3nqHEqTjCHhaLpRBn8",
-  authDomain:        "caos-v1.firebaseapp.com",
-  projectId:         "caos-v1",
-  storageBucket:     "caos-v1.firebasestorage.app",
-  messagingSenderId: "29375976118",
-  appId:             "1:29375976118:web:66696b738010c830814c17"
+  apiKey:            "AIzaSyCOPzVG-_35mhC5AVGkU1LciHtx7XS3PGY",
+  authDomain:        "bed-eqd2.firebaseapp.com",
+  projectId:         "bed-eqd2",
+  storageBucket:     "bed-eqd2.firebasestorage.app",
+  messagingSenderId: "1056348118909",
+  appId:             "1:1056348118909:web:67a80624c36985b9f83614"
 };
 firebase.initializeApp(firebaseConfig);
 const auth = firebase.auth();
@@ -468,7 +468,7 @@ async function logout() { await auth.signOut(); window.location.href = 'bed_acco
 
 // ── Apps Script API ───────────────────────────────────────────
 // Dán URL Apps Script sau khi deploy Code_BED.gs
-const BED_API_URL = "https://script.google.com/macros/s/AKfycbxgH8GutWKPd3LSWIHIW_MGyFEZ8frUy6HCGoDZtfjsnjpraT12j3l19xHni4xZye-X/exec";
+const BED_API_URL = "https://script.google.com/macros/s/AKfycbzlNBkgfZte7vVQVWXPjf8DmnAWkuIuwHxarze1o5UBru9NYf8YBrcJEcR4EXgvNm0C/exec";
 
 async function callAPI(action, data) {
   const idToken = await currentUser.getIdToken(true);
