@@ -1,0 +1,109 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>BED/EQD2 — Đăng nhập</title>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600&display=swap');
+*{margin:0;padding:0;box-sizing:border-box;}
+body{font-family:'Inter',sans-serif;min-height:100vh;display:flex;align-items:center;justify-content:center;
+  background:linear-gradient(135deg,rgba(13,61,114,0.82),rgba(26,95,168,0.75)),
+  url('varian.jpg') center/cover no-repeat;}
+.card{background:rgba(255,255,255,0.97);border-radius:14px;padding:40px 36px;width:100%;max-width:400px;box-shadow:0 20px 60px rgba(0,0,0,0.3);}
+.logos{display:flex;justify-content:center;align-items:center;gap:18px;margin-bottom:20px;}
+.logos img{height:48px;object-fit:contain;}
+.title{text-align:center;font-size:1.3rem;font-weight:600;color:#1a2133;margin-bottom:4px;}
+.subtitle{text-align:center;font-size:0.76rem;color:#8896aa;margin-bottom:26px;line-height:1.5;}
+.field{margin-bottom:14px;}
+.field label{display:block;font-size:0.75rem;font-weight:500;color:#4a5568;margin-bottom:4px;}
+.field input{width:100%;padding:9px 12px;border:1px solid #dde3ec;border-radius:8px;font-size:0.88rem;font-family:inherit;color:#1a2133;transition:border-color .15s;}
+.field input:focus{outline:none;border-color:#1a5fa8;box-shadow:0 0 0 3px rgba(26,95,168,0.12);}
+.btn-login{width:100%;padding:10px;background:#1a5fa8;color:white;border:none;border-radius:8px;font-size:0.88rem;font-weight:600;cursor:pointer;transition:background .15s;}
+.btn-login:hover{background:#134a85;}
+.btn-login:disabled{background:#aaa;cursor:not-allowed;}
+.divider{display:flex;align-items:center;gap:10px;margin:16px 0;color:#8896aa;font-size:0.73rem;}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:#dde3ec;}
+.btn-google{width:100%;padding:9px;background:white;color:#1a2133;border:1px solid #dde3ec;border-radius:8px;font-size:0.85rem;font-weight:500;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:9px;transition:all .15s;}
+.btn-google:hover{background:#f8fafc;box-shadow:0 2px 8px rgba(0,0,0,0.08);}
+.btn-google img{width:18px;}
+.error-msg{background:#fdecea;color:#c0392b;border:1px solid #f5c0bc;border-radius:7px;padding:8px 12px;font-size:0.78rem;margin-top:10px;display:none;}
+.loading-overlay{display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:99;align-items:center;justify-content:center;}
+.spinner{width:42px;height:42px;border:4px solid rgba(255,255,255,0.3);border-top-color:white;border-radius:50%;animation:spin .8s linear infinite;}
+@keyframes spin{to{transform:rotate(360deg)}}
+.footer-note{text-align:center;font-size:0.68rem;color:#8896aa;margin-top:20px;line-height:1.5;}
+</style>
+</head>
+<body>
+<div class="loading-overlay" id="loading"><div class="spinner"></div></div>
+<div class="card">
+  <div class="logos">
+    <img src="logo108.png" alt="BV 108">
+    <img src="logohust.png" alt="BKHN">
+  </div>
+  <div class="title">BED & EQD2 Calculator</div>
+  <div class="subtitle">Công cụ tính toán liều sinh học xạ trị<br>Đăng nhập để sử dụng</div>
+  <div class="field">
+    <label>Email</label>
+    <input type="email" id="email" placeholder="email@hospital.vn" autocomplete="email">
+  </div>
+  <div class="field">
+    <label>Mật khẩu</label>
+    <input type="password" id="password" placeholder="••••••••" autocomplete="current-password">
+  </div>
+  <button class="btn-login" id="btnLogin" onclick="loginEmail()">Đăng nhập</button>
+  <div class="divider">hoặc</div>
+  <button class="btn-google" onclick="loginGoogle()">
+    <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="G">
+    Đăng nhập bằng Google
+  </button>
+  <div class="error-msg" id="errorMsg"></div>
+  <div class="footer-note">TS. Phạm Quang Trung · BV Trung ương Quân đội 108<br>Chỉ dành cho nhân viên y tế được cấp quyền</div>
+</div>
+<script>
+const firebaseConfig = {
+  apiKey:            "AIzaSyDc6A45Nh2tlTO-q3nqHEqTjCHhaLpRBn8",
+  authDomain:        "caos-v1.firebaseapp.com",
+  projectId:         "caos-v1",
+  storageBucket:     "caos-v1.firebasestorage.app",
+  messagingSenderId: "29375976118",
+  appId:             "1:29375976118:web:66696b738010c830814c17"
+};
+firebase.initializeApp(firebaseConfig);
+const auth = firebase.auth();
+
+auth.onAuthStateChanged(user => { if(user) window.location.href='bed_index.html'; });
+
+function showLoading(v){ document.getElementById('loading').style.display=v?'flex':'none'; }
+function showError(msg){ const el=document.getElementById('errorMsg'); el.textContent=msg; el.style.display='block'; }
+function clearError(){ document.getElementById('errorMsg').style.display='none'; }
+
+async function loginEmail(){
+  clearError();
+  const email=document.getElementById('email').value.trim();
+  const password=document.getElementById('password').value;
+  if(!email||!password) return showError('Vui lòng nhập email và mật khẩu.');
+  showLoading(true);
+  try {
+    await auth.signInWithEmailAndPassword(email,password);
+  } catch(err){
+    showLoading(false);
+    const msgs={'auth/wrong-password':'Mật khẩu không chính xác.','auth/user-not-found':'Email không tồn tại.','auth/invalid-email':'Email không hợp lệ.','auth/too-many-requests':'Quá nhiều lần thử.'};
+    showError(msgs[err.code]||'Lỗi: '+err.message);
+  }
+}
+async function loginGoogle(){
+  clearError(); showLoading(true);
+  try {
+    await auth.signInWithPopup(new firebase.auth.GoogleAuthProvider());
+  } catch(err){
+    showLoading(false);
+    if(err.code!=='auth/popup-closed-by-user') showError('Lỗi: '+err.message);
+  }
+}
+document.addEventListener('keydown',e=>{ if(e.key==='Enter') loginEmail(); });
+</script>
+</body>
+</html>
