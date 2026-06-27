@@ -393,31 +393,50 @@ canvas{border-radius:8px;border:1px solid var(--border);display:block;width:100%
 
 <!-- GIỚI HẠN LIỀU -->
 <div id="tab-organ" class="tab-panel">
-  <div class="callout info" style="margin-bottom:12px"><span>📚</span><span>Database 15+ cơ quan. Nguồn: QUANTEC 2010 · AAPM TG-101 · Marks LB et al. 2010</span></div>
+  <div class="callout info" style="margin-bottom:12px">
+    <span>📚</span>
+    <span>Database từ <strong>dose_constraints.json</strong> · 11 mặt bệnh · Conventional + SBRT/SABR · Nguồn: QUANTEC 2010, AAPM TG-101, RTOG, Grimm 2020, ESTRO ACROP 2022</span>
+  </div>
   <div class="card">
-    <div class="card-header">🔍 <h2>Tra cứu & Chuyển đổi giới hạn liều</h2></div>
+    <div class="card-header">🔍 <h2>Tra cứu giới hạn liều theo mặt bệnh</h2></div>
     <div class="card-body">
       <div class="grid2">
         <div class="field">
-          <label>Chọn cơ quan</label>
-          <select id="org-sel">
-            <option value="">-- Chọn --</option>
-            <optgroup label="🧠 Thần kinh"><option value="spinal_cord">Tủy sống</option><option value="brain">Não</option><option value="brainstem">Thân não</option><option value="optic_nerve">TK thị giác</option><option value="chiasm">Giao thoa thị giác</option><option value="cochlea">Ốc tai</option></optgroup>
-            <optgroup label="❤️ Tim · Phổi"><option value="heart">Tim</option><option value="lung">Phổi</option><option value="esophagus">Thực quản</option></optgroup>
-            <optgroup label="🫁 Bụng"><option value="liver">Gan</option><option value="kidney">Thận</option><option value="rectum">Trực tràng</option><option value="bladder">Bàng quang</option></optgroup>
-            <optgroup label="🩹 Khác"><option value="parotid">Tuyến mang tai</option><option value="lens">Thủy tinh thể</option></optgroup>
+          <label>Mặt bệnh</label>
+          <select id="dc-site">
+            <option value="">-- Chọn mặt bệnh --</option>
+            <option value="lung">🫁 Phổi (Lung)</option>
+            <option value="brain">🧠 Não (Brain / SRS)</option>
+            <option value="breast">🎀 Vú (Breast)</option>
+            <option value="head_neck">🗣️ Đầu cổ (Head &amp; Neck)</option>
+            <option value="prostate">♂️ Tuyến tiền liệt (Prostate)</option>
+            <option value="cervix_pelvis">♀️ Cổ TC / Vùng chậu</option>
+            <option value="esophagus">🍽️ Thực quản (Esophagus)</option>
+            <option value="abdomen_liver">🫀 Gan / Ổ bụng (Liver)</option>
+            <option value="rectum">🔻 Trực tràng (Rectum)</option>
+            <option value="kidney_adrenal">🫁 Thận / Thượng thận</option>
+            <option value="spine_sbrt">🦴 Cột sống SBRT (Spine)</option>
           </select>
         </div>
-        <div class="field"><label>d mới để tính (Gy/fx)</label><input type="number" id="org-d-new" placeholder="vd: 3" step="0.1"><span class="hint">Để trống → chỉ tra cứu</span></div>
+        <div class="field">
+          <label>Kỹ thuật</label>
+          <select id="dc-mode">
+            <option value="">Cả hai (Conventional + SBRT)</option>
+            <option value="conventional">Xạ trị quy ước (Conventional)</option>
+            <option value="sbrt">SBRT / SABR / SRS</option>
+          </select>
+        </div>
       </div>
       <div class="btn-row">
-        <button class="btn btn-primary" id="btnORG" onclick="doLookupOrgan()">🔍 Tra cứu & Tính</button>
+        <button class="btn btn-primary" id="btnDC" onclick="doLookupDC()">🔍 Tra cứu</button>
       </div>
     </div>
   </div>
-  <div id="organ-result" style="display:none">
-    <div class="card"><div class="card-header">📋 <h2 id="organ-title">Kết quả</h2></div>
-    <div class="card-body" id="organ-body"></div></div>
+  <div id="dc-result" style="display:none">
+    <div class="card">
+      <div class="card-header">📋 <h2 id="dc-title">Kết quả</h2></div>
+      <div class="card-body" id="dc-body"></div>
+    </div>
   </div>
 </div>
 
@@ -468,7 +487,7 @@ async function logout() { await auth.signOut(); window.location.href = 'account.
 
 // ── Apps Script API ───────────────────────────────────────────
 // Dán URL Apps Script sau khi deploy Code_BED.gs
-const BED_API_URL = "https://script.google.com/macros/s/AKfycbzlNBkgfZte7vVQVWXPjf8DmnAWkuIuwHxarze1o5UBru9NYf8YBrcJEcR4EXgvNm0C/exec";
+const BED_API_URL = "https://script.google.com/macros/s/AKfycbyekY1w4rCAuEElhxUvpjP4SmgkUq2C46jr_vED60Jw5m5mg2LmTdcI9r-7c3YqUn0P/exec";
 
 async function callAPI(action, data) {
   const idToken = await currentUser.getIdToken(true);
@@ -741,6 +760,77 @@ async function doLookupOrgan() {
     showEl('organ-result');
   } catch(e) { alert('Lỗi: ' + e.message); }
   finally { setBtnLoading('btnORG', false); }
+}
+
+
+// ── Dose Constraints lookup ───────────────────────────────────
+async function doLookupDC() {
+  const site = document.getElementById('dc-site').value;
+  const mode = document.getElementById('dc-mode').value;
+  if (!site) return alert('Chọn mặt bệnh.');
+  setBtnLoading('btnDC', true);
+  try {
+    const r = await callAPI('lookupDoseConstraints', { site, mode: mode || null });
+    document.getElementById('dc-title').textContent = r.name + ' — Giới hạn liều OAR';
+    
+    let html = '';
+    
+    function renderOARs(oars, label, fractionation) {
+      if (!oars) return '';
+      let h = `<div style="margin-bottom:16px">
+        <div style="font-size:0.72rem;font-weight:700;color:var(--primary);text-transform:uppercase;
+          letter-spacing:0.1em;margin-bottom:6px;padding:6px 10px;background:var(--primary-l);
+          border-radius:6px">📋 ${label} &nbsp;<span style="font-weight:400;color:var(--text3)">
+          ${fractionation || ''}</span></div>`;
+      Object.entries(oars).forEach(([key, oar]) => {
+        h += `<div style="margin-bottom:10px;background:var(--surface2);border-radius:8px;padding:11px 14px;">
+          <div style="font-size:0.8rem;font-weight:600;color:var(--text);margin-bottom:7px">
+            🏥 ${oar.name}</div>
+          <table style="width:100%;border-collapse:collapse;font-size:0.76rem">
+            <thead><tr>
+              <th style="text-align:left;padding:4px 8px;background:var(--surface);border:1px solid var(--border);color:var(--text3);font-size:0.68rem">Tham số</th>
+              <th style="text-align:left;padding:4px 8px;background:var(--surface);border:1px solid var(--border);color:var(--text3);font-size:0.68rem">Giới hạn</th>
+              <th style="text-align:left;padding:4px 8px;background:var(--surface);border:1px solid var(--border);color:var(--text3);font-size:0.68rem">Endpoint</th>
+              <th style="text-align:left;padding:4px 8px;background:var(--surface);border:1px solid var(--border);color:var(--text3);font-size:0.68rem">Nguồn</th>
+            </tr></thead><tbody>`;
+        (oar.constraints || []).forEach(c => {
+          h += `<tr>
+            <td style="padding:4px 8px;border:1px solid var(--border);font-family:'JetBrains Mono',monospace;font-size:0.75rem">${c.parameter}</td>
+            <td style="padding:4px 8px;border:1px solid var(--border);font-weight:600;color:var(--primary)">${c.limit}</td>
+            <td style="padding:4px 8px;border:1px solid var(--border);color:var(--text2)">${c.endpoint || ''}${c.fractionation ? ' <span style="color:var(--text3);font-size:0.7rem">('+c.fractionation+')</span>' : ''}</td>
+            <td style="padding:4px 8px;border:1px solid var(--border);color:var(--text3);font-size:0.7rem;font-style:italic">${c.source || ''}</td>
+          </tr>`;
+        });
+        h += `</tbody></table></div>`;
+      });
+      return h + '</div>';
+    }
+    
+    if (r.conventional) {
+      html += renderOARs(r.conventional.oars, 'Xạ trị quy ước (Conventional)', r.conventional.fractionation);
+    }
+    if (r.sbrt) {
+      html += renderOARs(r.sbrt.oars, 'SBRT / SABR / SRS', r.sbrt.fractionation);
+    }
+    if (r.oars) {
+      // Single mode result
+      html += renderOARs(r.oars, r.mode === 'sbrt' ? 'SBRT / SABR / SRS' : 'Xạ trị quy ước', r.fractionation);
+    }
+    
+    // Sources
+    if (r.sources) {
+      html += `<div class="callout purple" style="margin-top:10px">
+        <span>📖</span>
+        <div><strong>Nguồn tài liệu:</strong><ul style="margin-top:4px;padding-left:16px">
+        ${r.sources.map(s => `<li style="font-size:0.72rem;margin-bottom:2px">${s}</li>`).join('')}
+        </ul></div></div>`;
+    }
+    
+    document.getElementById('dc-body').innerHTML = html;
+    document.getElementById('dc-result').style.display = 'block';
+    addHistory('Giới hạn liều', `${r.name} ${mode||'tất cả'}`, `${Object.keys(r.conventional?.oars||r.oars||{}).length} OAR`);
+  } catch(e) { alert('Lỗi: ' + e.message); }
+  finally { setBtnLoading('btnDC', false); }
 }
 
 // ── Chart (client-side) ───────────────────────────────────────
