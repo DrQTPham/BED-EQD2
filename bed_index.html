@@ -487,7 +487,7 @@ async function logout() { await auth.signOut(); window.location.href = 'account.
 
 // ── Apps Script API ───────────────────────────────────────────
 // Dán URL Apps Script sau khi deploy Code_BED.gs
-const BED_API_URL = "https://script.google.com/macros/s/AKfycbyekY1w4rCAuEElhxUvpjP4SmgkUq2C46jr_vED60Jw5m5mg2LmTdcI9r-7c3YqUn0P/exec";
+const BED_API_URL = "https://script.google.com/macros/s/AKfycbxV9NwAy_gW8q2MTsgPIcd-F5RzO2cwlnrkQ8Xe0Q7mqP6KEwIRpbik2DEkfyzEb9ha/exec";
 
 async function callAPI(action, data) {
   const idToken = await currentUser.getIdToken(true);
