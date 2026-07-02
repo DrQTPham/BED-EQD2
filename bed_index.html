@@ -205,47 +205,123 @@ canvas{border-radius:8px;border:1px solid var(--border);display:block;width:100%
 
 <!-- RE-IRRADIATION -->
 <div id="tab-reirrad" class="tab-panel">
+
   <div id="theory-reirrad-box" class="theory-box" style="display:none">
-    <h3>Re-irradiation — Cộng dồn BED</h3>
-    <p>Khi xạ trị lại, tổng BED tích lũy cần theo dõi để không vượt ngưỡng mô lành. Đặc biệt với tủy sống và não.</p>
+    <h3>Re-irradiation — Lý thuyết cộng dồn BED</h3>
+    <p>Khi xạ trị lại (re-irradiation), tổng liều sinh học tích lũy phải được kiểm soát để không vượt ngưỡng dung nạp của mô lành, đặc biệt các cơ quan cấu trúc nối tiếp (serial structure) như tủy sống, thân não, TK thị giác.</p>
     <div class="formula">BED_tổng = Σ Dᵢ × (1 + dᵢ/(α/β))</div>
-    <div class="formula">BED_hiệu_quả = BED_đợt1 × (1-f) + BED_đợt2 &nbsp;[f = hệ số hồi phục]</div>
-    <div class="ref">📖 Nieder C et al. (2006) Int J Radiat Oncol · Sahgal A et al. (2012) Int J Radiat Oncol</div>
+    <div class="formula">BED_hiệu_quả_đợt_i = BED_i × (1 − f_i) &nbsp;[f = hệ số hồi phục mô]</div>
+    <div class="formula">EQD₂_tích_lũy = BED_tích_lũy_hiệu_quả / (1 + 2/(α/β))</div>
+    <p style="margin-top:6px"><strong>Hệ số hồi phục f:</strong> Mô lành có thể tự sửa chữa một phần tổn thương dưới lâm sàng (subclinical damage) sau khoảng thời gian đủ dài. Mô hình Nieder 2006 và Cureus 2025 cho thấy tủy sống hồi phục ~50% BED gốc trong vòng 2 năm, tối đa 80% sau thời gian dài nhất.</p>
+    <div class="ref">📖 Nieder C et al. (2006) Int J Radiat Oncol 64(5):1267–1272 · Doi H et al. (2021) Strahlenther Onkol — PMC8154818 · Cureus (2025) Spinal Cord SBRT reRT NTCP model · ESTRO ReIrradiation Focus Group (2025) Radiother Oncol · Wang H et al. (2016) Red Journal 96(2S)</div>
   </div>
-  <button class="theory-toggle" onclick="toggleTheory('theory-reirrad-box',this)">📖 Xem lý thuyết ▼</button>
+  <button class="theory-toggle" onclick="toggleTheory('theory-reirrad-box',this)">📖 Xem lý thuyết Re-irradiation ▼</button>
+
   <div class="card">
     <div class="card-header">🔄 <h2>Cộng dồn BED nhiều đợt xạ trị</h2></div>
     <div class="card-body">
-      <div class="grid2" style="margin-bottom:11px">
+
+      <!-- Chọn cơ quan với ngưỡng tự động -->
+      <div class="grid2" style="margin-bottom:12px">
         <div class="field">
           <label>Cơ quan theo dõi</label>
-          <select id="ri-ab-sel" onchange="document.getElementById('ri-ab').value=this.value">
-            <option value="2">Tủy sống — 2 Gy ⚠️</option>
-            <option value="2.5">Não — 2.5 Gy</option>
-            <option value="3">Trực tràng — 3 Gy</option>
-            <option value="3">Bàng quang — 3 Gy</option>
-            <option value="3">Phổi — 3 Gy</option>
+          <select id="ri-organ-sel" onchange="onOrganSelect()">
+            <optgroup label="🧠 Hệ thần kinh TW">
+              <option value="spinal_cord"  data-ab="2"   data-limit="70">Tủy sống ⚠️</option>
+              <option value="brainstem"    data-ab="2"   data-limit="79">Thân não ⚠️</option>
+              <option value="brain"        data-ab="2.5" data-limit="120">Não (parenchyma)</option>
+              <option value="optic_nerve"  data-ab="2.5" data-limit="55">TK thị giác</option>
+              <option value="optic_chiasm" data-ab="2.5" data-limit="55">Giao thoa thị giác</option>
+              <option value="temporal_lobe" data-ab="2.5" data-limit="72">Thùy thái dương</option>
+              <option value="cochlea"      data-ab="3"   data-limit="45">Ốc tai</option>
+              <option value="brachial_plexus" data-ab="3" data-limit="66">Đám rối TK cánh tay</option>
+            </optgroup>
+            <optgroup label="❤️ Ngực">
+              <option value="heart"        data-ab="3"   data-limit="35">Tim</option>
+              <option value="lung"         data-ab="3"   data-limit="24">Phổi</option>
+              <option value="esophagus"    data-ab="10"  data-limit="80">Thực quản</option>
+              <option value="trachea_bronchus" data-ab="10" data-limit="80">Khí quản / Phế quản</option>
+            </optgroup>
+            <optgroup label="🫁 Bụng">
+              <option value="liver"        data-ab="2.5" data-limit="40">Gan</option>
+              <option value="kidney"       data-ab="2.5" data-limit="20">Thận</option>
+              <option value="stomach_duodenum" data-ab="10" data-limit="70">Dạ dày / Tá tràng</option>
+              <option value="small_bowel"  data-ab="3"   data-limit="100">Ruột non</option>
+            </optgroup>
+            <optgroup label="🔻 Tiểu khung">
+              <option value="rectum"       data-ab="3"   data-limit="83">Trực tràng</option>
+              <option value="bladder"      data-ab="3"   data-limit="110">Bàng quang</option>
+            </optgroup>
+            <optgroup label="🗣️ Đầu cổ">
+              <option value="mandible"     data-ab="3"   data-limit="75">Xương hàm</option>
+              <option value="parotid"      data-ab="3"   data-limit="40">Tuyến mang tai</option>
+            </optgroup>
           </select>
         </div>
-        <div class="field"><label>α/β tùy chỉnh (Gy)</label><input type="number" id="ri-ab" value="2" step="0.1"></div>
+        <div class="field">
+          <label>α/β tùy chỉnh (Gy)</label>
+          <input type="number" id="ri-ab" value="2" step="0.1">
+          <span class="hint" id="ri-limit-hint" style="color:var(--warn);font-weight:500"></span>
+        </div>
       </div>
+
+      <!-- Ngưỡng tham chiếu -->
+      <div id="ri-ref-box" style="display:none;margin-bottom:12px">
+        <div class="callout info" id="ri-ref-content"></div>
+      </div>
+
+      <!-- Các đợt xạ trị -->
       <div id="ri-courses"></div>
       <button class="btn btn-outline btn-sm" onclick="addCourse()">＋ Thêm đợt</button>
-      <div class="field" style="margin-top:12px;max-width:280px">
-        <label>Hệ số hồi phục mô f (0–0.5)</label>
-        <input type="number" id="ri-recovery" value="0" step="0.05" min="0" max="0.5">
-        <span class="hint">0 = không hồi phục · 0.25 = 25% sau >2 năm</span>
+
+      <!-- Khoảng thời gian & hồi phục -->
+      <div style="background:var(--surface2);border:1px solid var(--border);border-radius:8px;padding:12px;margin-top:12px">
+        <div style="font-size:0.72rem;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:0.08em;margin-bottom:10px">⏱️ Ảnh hưởng khoảng thời gian giữa các đợt</div>
+        <div class="grid2">
+          <div class="field">
+            <label>Hệ số hồi phục f (0–0.8)</label>
+            <input type="number" id="ri-recovery" value="0" step="0.05" min="0" max="0.8">
+          </div>
+          <div class="field">
+            <label>Chọn theo khoảng cách</label>
+            <select id="ri-recovery-guide" onchange="applyRecoveryGuide()">
+              <option value="">-- Chọn khoảng cách --</option>
+              <option value="0">< 6 tháng → f = 0 (không hồi phục)</option>
+              <option value="0.15">6–12 tháng → f = 0.15 (hồi phục 15%)</option>
+              <option value="0.25">12–24 tháng → f = 0.25 (hồi phục 25%)</option>
+              <option value="0.5">> 24 tháng → f = 0.5 (hồi phục 50%)</option>
+              <option value="0.8">> 5 năm → f = 0.8 (hồi phục 80%)</option>
+            </select>
+          </div>
+        </div>
+        <div style="font-size:0.72rem;color:var(--text3);margin-top:4px">
+          📖 Nieder 2006 · Cureus 2025: tủy sống hồi phục ~50% BED gốc sau &lt;2 năm; tối đa 80% sau thời gian dài nhất.
+          f áp dụng cho <strong>các đợt trước đợt cuối</strong>.
+        </div>
       </div>
+
       <div class="btn-row">
         <button class="btn btn-primary" id="btnRI" onclick="doReIrrad()">🧮 Tính tổng tích lũy</button>
-        <button class="btn btn-outline" onclick="clearRI()">✕</button>
+        <button class="btn btn-outline btn-sm" id="btnRIRef" onclick="doLoadOARRef()" style="display:none">📚 Xem ngưỡng chi tiết</button>
+        <button class="btn btn-outline" onclick="clearRI()">✕ Xóa</button>
       </div>
     </div>
   </div>
+
   <div id="ri-result" style="display:none">
-    <div class="card"><div class="card-header">📋 <h2>Kết quả</h2></div>
-    <div class="card-body" id="ri-body"></div></div>
+    <div class="card">
+      <div class="card-header">📋 <h2>Kết quả tích lũy</h2></div>
+      <div class="card-body" id="ri-body"></div>
+    </div>
   </div>
+
+  <div id="ri-oar-detail" style="display:none">
+    <div class="card">
+      <div class="card-header">📚 <h2 id="ri-oar-title">Ngưỡng liều xạ lại chi tiết</h2></div>
+      <div class="card-body" id="ri-oar-body"></div>
+    </div>
+  </div>
+
 </div>
 
 <!-- SO SÁNH -->
@@ -487,7 +563,7 @@ async function logout() { await auth.signOut(); window.location.href = 'account.
 
 // ── Apps Script API ───────────────────────────────────────────
 // Dán URL Apps Script sau khi deploy Code_BED.gs
-const BED_API_URL = "https://script.google.com/macros/s/AKfycbzUL2FIk2KAIO6YlCZ6WDYGSvZnEyBkcXRXbEifO5P5NJPv_QrpF2u02ZdsLcm7UCWw/exec";
+const BED_API_URL = "https://script.google.com/macros/s/AKfycbx2FRPJYXGaN-f1gQ7p4bTZgfYWtasAPgC46KUYEbq2KTry7QCJqHBoEneRm5RU32vV/exec";
 
 async function callAPI(action, data) {
   const idToken = await currentUser.getIdToken(true);
@@ -592,7 +668,54 @@ function clearBED() {
   document.getElementById('bed-result').style.display = 'none';
 }
 
+
 // ── Re-irradiation ────────────────────────────────────────────
+const RI_ORGAN_DATA = {
+  spinal_cord:  { name:"Tủy sống",              ab:2,   limit:70,  unit:"Gy", param:"EQD₂ Dmax tích lũy" },
+  brainstem:    { name:"Thân não",              ab:2,   limit:79,  unit:"Gy", param:"EQD₂ Dmax tích lũy" },
+  brain:        { name:"Não (parenchyma)",       ab:2.5, limit:120, unit:"Gy", param:"EQD₂ Dmax tích lũy" },
+  optic_nerve:  { name:"TK thị giác",           ab:2.5, limit:55,  unit:"Gy", param:"EQD₂ Dmax tích lũy" },
+  optic_chiasm: { name:"Giao thoa thị giác",    ab:2.5, limit:55,  unit:"Gy", param:"EQD₂ Dmax tích lũy" },
+  temporal_lobe:{ name:"Thùy thái dương",       ab:2.5, limit:72,  unit:"Gy", param:"EQD₂ Dmax tích lũy" },
+  cochlea:      { name:"Ốc tai",                ab:3,   limit:45,  unit:"Gy", param:"EQD₂ Dmean tích lũy" },
+  brachial_plexus:{ name:"Đám rối TK cánh tay",ab:3,   limit:66,  unit:"Gy", param:"EQD₂ Dmax tích lũy" },
+  heart:        { name:"Tim",                   ab:3,   limit:35,  unit:"Gy", param:"EQD₂ Dmean tích lũy" },
+  lung:         { name:"Phổi",                  ab:3,   limit:24,  unit:"Gy", param:"EQD₂ MLD tích lũy" },
+  esophagus:    { name:"Thực quản",             ab:10,  limit:80,  unit:"Gy", param:"EQD₂ Dmax tích lũy" },
+  trachea_bronchus:{ name:"Khí quản/Phế quản", ab:10,  limit:80,  unit:"Gy", param:"EQD₂ Dmax tích lũy" },
+  liver:        { name:"Gan",                   ab:2.5, limit:40,  unit:"Gy", param:"EQD₂ Dmean tích lũy" },
+  kidney:       { name:"Thận",                  ab:2.5, limit:20,  unit:"Gy", param:"EQD₂ Dmean tích lũy (2 thận)" },
+  stomach_duodenum:{ name:"Dạ dày/Tá tràng",   ab:10,  limit:70,  unit:"Gy", param:"EQD₂ Dmax tích lũy" },
+  small_bowel:  { name:"Ruột non",              ab:3,   limit:100, unit:"cc", param:"EQD₂ V45 tích lũy" },
+  rectum:       { name:"Trực tràng",            ab:3,   limit:83,  unit:"Gy", param:"EQD₂ Dmax tích lũy" },
+  bladder:      { name:"Bàng quang",            ab:3,   limit:110, unit:"Gy", param:"EQD₂ Dmax tích lũy" },
+  mandible:     { name:"Xương hàm",             ab:3,   limit:75,  unit:"Gy", param:"EQD₂ Dmax tích lũy" },
+  parotid:      { name:"Tuyến mang tai",        ab:3,   limit:40,  unit:"Gy", param:"EQD₂ Dmean tích lũy" },
+};
+
+function onOrganSelect() {
+  const sel = document.getElementById('ri-organ-sel');
+  const opt = sel.options[sel.selectedIndex];
+  const ab    = parseFloat(opt.dataset.ab);
+  const limit = parseFloat(opt.dataset.limit);
+  const key   = opt.value;
+  const org   = RI_ORGAN_DATA[key];
+  if (!isNaN(ab))    document.getElementById('ri-ab').value = ab;
+  if (org) {
+    document.getElementById('ri-limit-hint').textContent =
+      `Ngưỡng: ${org.param} ≤ ${limit} ${org.unit}`;
+    document.getElementById('ri-ref-content').innerHTML =
+      `<span>⚕️</span><span><strong>${org.name}</strong> — ${org.param} ≤ <strong>${limit} ${org.unit}</strong></span>`;
+    document.getElementById('ri-ref-box').style.display = 'block';
+    document.getElementById('btnRIRef').style.display = 'inline-flex';
+  }
+}
+
+function applyRecoveryGuide() {
+  const v = document.getElementById('ri-recovery-guide').value;
+  if (v !== '') document.getElementById('ri-recovery').value = v;
+}
+
 let courseCount = 0;
 function addCourse() {
   courseCount++;
@@ -604,7 +727,7 @@ function addCourse() {
     <div class="grid3">
       <div class="field"><label>D (Gy)</label><input type="number" class="ri-D" step="0.1" placeholder="vd: 60"></div>
       <div class="field"><label>Số fx n</label><input type="number" class="ri-n" step="1" placeholder="vd: 30"></div>
-      <div class="field"><label>Năm</label><input type="text" class="ri-year" placeholder="vd: 2022"></div>
+      <div class="field"><label>Năm</label><input type="text" class="ri-year" placeholder="vd: 2021"></div>
     </div>`;
   document.getElementById('ri-courses').appendChild(div);
 }
@@ -613,7 +736,7 @@ async function doReIrrad() {
   const ab = parseFloat(document.getElementById('ri-ab').value) || 2;
   const f  = parseFloat(document.getElementById('ri-recovery').value) || 0;
   const blocks = document.querySelectorAll('.course-block');
-  if (!blocks.length) return alert('Thêm ít nhất 1 đợt.');
+  if (!blocks.length) return alert('Thêm ít nhất 1 đợt xạ trị.');
   const courses = [];
   blocks.forEach((b, i) => {
     const D = parseFloat(b.querySelector('.ri-D').value);
@@ -622,30 +745,145 @@ async function doReIrrad() {
     if (!isNaN(D) && !isNaN(n) && n > 0) courses.push({ D, n, year });
   });
   if (!courses.length) return alert('Nhập đầy đủ D và n.');
+
+  // Lấy ngưỡng OAR
+  const selEl = document.getElementById('ri-organ-sel');
+  const organKey = selEl ? selEl.value : null;
+  const organData = organKey ? RI_ORGAN_DATA[organKey] : null;
+
   setBtnLoading('btnRI', true);
   try {
     const r = await callAPI('calcReIrrad', { courses, ab, recovery_f: f });
-    let html = `<table class="cmp-tbl"><thead><tr><th>Đợt</th><th>D (Gy)</th><th>d (Gy/fx)</th><th>BED (Gy)</th><th>BED hiệu quả</th><th>EQD₂ (Gy)</th></tr></thead><tbody>`;
+
+    // Tự tính ngưỡng từ organData nếu có
+    const limit = organData ? organData.limit : (ab <= 2 ? 60 : ab <= 2.5 ? 72 : 90);
+    const limitParam = organData ? organData.param : 'EQD₂ tích lũy';
+    const limitUnit = organData ? organData.unit : 'Gy';
+    const organName = organData ? organData.name : `α/β = ${ab} Gy`;
+    const safe = r.totalEQD2 <= limit;
+
+    let html = `
+    <table style="width:100%;border-collapse:collapse;font-size:0.8rem;margin-bottom:12px">
+      <thead><tr>
+        <th style="padding:6px 10px;text-align:left;background:var(--surface2);border:1px solid var(--border);color:var(--text3);font-size:0.7rem">Đợt</th>
+        <th style="padding:6px 10px;text-align:right;background:var(--surface2);border:1px solid var(--border);color:var(--text3);font-size:0.7rem">D (Gy)</th>
+        <th style="padding:6px 10px;text-align:right;background:var(--surface2);border:1px solid var(--border);color:var(--text3);font-size:0.7rem">d (Gy/fx)</th>
+        <th style="padding:6px 10px;text-align:right;background:var(--surface2);border:1px solid var(--border);color:var(--text3);font-size:0.7rem">BED (Gy)</th>
+        <th style="padding:6px 10px;text-align:right;background:var(--surface2);border:1px solid var(--border);color:var(--text3);font-size:0.7rem">BED hiệu quả</th>
+        <th style="padding:6px 10px;text-align:right;background:var(--surface2);border:1px solid var(--border);color:var(--text3);font-size:0.7rem">EQD₂ (Gy)</th>
+      </tr></thead><tbody>`;
     r.details.forEach(c => {
-      html += `<tr><td>${c.year}</td><td>${fmtNum(c.D)}</td><td>${fmtNum(c.d,3)}</td><td>${fmtNum(c.BED)}</td><td>${fmtNum(c.BEDeff)}</td><td>${fmtNum(c.EQD2eff)}</td></tr>`;
+      html += `<tr>
+        <td style="padding:5px 10px;border:1px solid var(--border)">${c.year}</td>
+        <td style="padding:5px 10px;border:1px solid var(--border);text-align:right;font-family:'JetBrains Mono',monospace">${fmtNum(c.D)}</td>
+        <td style="padding:5px 10px;border:1px solid var(--border);text-align:right;font-family:'JetBrains Mono',monospace">${fmtNum(c.d,3)}</td>
+        <td style="padding:5px 10px;border:1px solid var(--border);text-align:right;font-family:'JetBrains Mono',monospace">${fmtNum(c.BED)}</td>
+        <td style="padding:5px 10px;border:1px solid var(--border);text-align:right;font-family:'JetBrains Mono',monospace">${fmtNum(c.BEDeff)}</td>
+        <td style="padding:5px 10px;border:1px solid var(--border);text-align:right;font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--primary)">${fmtNum(c.EQD2eff)}</td>
+      </tr>`;
     });
-    html += `<tr style="font-weight:700;background:var(--surface2)"><td colspan="3">TỔNG</td><td colspan="2">${fmtNum(r.totalBED)}</td><td>${fmtNum(r.totalEQD2)}</td></tr></tbody></table>`;
-    html += `<div class="callout ${r.safe?'green':'warn'}" style="margin-top:11px">
-      <span>${r.safe?'✅':'⚠️'}</span>
-      <span>Tổng EQD₂ = <strong>${fmtNum(r.totalEQD2)} Gy</strong> ${r.safe?`— An toàn (≤${r.limit} Gy)`:`— VƯỢT ngưỡng ≤${r.limit} Gy!`}</span>
+    html += `<tr style="font-weight:700;background:var(--surface2)">
+      <td colspan="3" style="padding:6px 10px;border:1px solid var(--border)">TỔNG CỘNG</td>
+      <td style="padding:6px 10px;border:1px solid var(--border);text-align:right;font-family:'JetBrains Mono',monospace">${fmtNum(r.totalBED)}</td>
+      <td style="padding:6px 10px;border:1px solid var(--border);text-align:right;font-family:'JetBrains Mono',monospace">${fmtNum(r.totalBED)}</td>
+      <td style="padding:6px 10px;border:1px solid var(--border);text-align:right;font-family:'JetBrains Mono',monospace;color:${safe?'var(--accent)':'var(--red)'}">${fmtNum(r.totalEQD2)}</td>
+    </tr></tbody></table>`;
+
+    // Đánh giá ngưỡng
+    const pct = ((r.totalEQD2 / limit) * 100).toFixed(0);
+    html += `<div class="callout ${safe ? 'green' : 'warn'}" style="margin-bottom:8px">
+      <span>${safe ? '✅' : '⚠️'}</span>
+      <span>
+        <strong>${organName}</strong> — ${limitParam}<br>
+        Tổng EQD₂ tích lũy = <strong style="font-family:'JetBrains Mono',monospace">${fmtNum(r.totalEQD2)} Gy</strong>
+        &nbsp;/&nbsp; Ngưỡng ≤ <strong>${limit} ${limitUnit}</strong>
+        &nbsp;→ <strong style="color:${safe?'var(--accent)':'var(--red)'}">${pct}% ngưỡng &nbsp; ${safe ? '✅ AN TOÀN' : '❌ VƯỢT NGƯỠNG!'}</strong>
+      </span>
     </div>`;
+
+    // Hồi phục
+    if (f > 0) {
+      html += `<div class="callout info">
+        <span>⏱️</span>
+        <span>Hệ số hồi phục f = <strong>${f}</strong> đã được áp dụng cho các đợt trước đợt cuối.
+        Căn cứ: Nieder 2006 · Cureus 2025 — tủy sống hồi phục ~50% BED gốc sau &lt;2 năm, tối đa 80% sau thời gian dài nhất.</span>
+      </div>`;
+    }
+
     document.getElementById('ri-body').innerHTML = html;
     showEl('ri-result');
-    addHistory('Re-irradiation', `${r.details.length} đợt, α/β=${ab}`, `Tổng EQD₂=${fmtNum(r.totalEQD2)} Gy`);
+    addHistory('Re-irradiation', `${organName}, ${r.details.length} đợt, α/β=${ab}, f=${f}`,
+      `EQD₂=${fmtNum(r.totalEQD2)} Gy / ${limit} ${limitUnit} (${pct}%)`);
   } catch(e) { alert('Lỗi: ' + e.message); }
   finally { setBtnLoading('btnRI', false); }
+}
+
+async function doLoadOARRef() {
+  const sel = document.getElementById('ri-organ-sel');
+  const organKey = sel ? sel.value : null;
+  if (!organKey) return;
+  setBtnLoading('btnRIRef', true);
+  try {
+    const r = await callAPI('getReIrradLimits', { organ: organKey });
+    document.getElementById('ri-oar-title').textContent = r.name + ' — Ngưỡng liều xạ lại';
+    let html = '';
+
+    // Chi tiết ngưỡng
+    html += `<div style="margin-bottom:14px">
+      <div style="font-size:0.72rem;font-weight:600;color:var(--text3);text-transform:uppercase;margin-bottom:8px">Các ràng buộc liều</div>`;
+    (r.details||[]).forEach(d => {
+      html += `<div style="display:flex;justify-content:space-between;align-items:flex-start;padding:7px 10px;background:var(--surface2);border-radius:6px;margin-bottom:5px;gap:10px">
+        <div style="font-size:0.8rem;color:var(--text2)">${d.param}</div>
+        <div style="font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--primary);font-size:0.8rem;white-space:nowrap">${d.limit}</div>
+      </div>
+      ${d.note ? `<div style="font-size:0.72rem;color:var(--text3);padding:0 10px 5px">${d.note}</div>` : ''}`;
+    });
+    html += '</div>';
+
+    // Hướng dẫn hồi phục
+    if (r.recovery_guidance) {
+      html += `<div style="margin-bottom:14px">
+        <div style="font-size:0.72rem;font-weight:600;color:var(--text3);text-transform:uppercase;margin-bottom:8px">⏱️ Hệ số hồi phục theo khoảng cách</div>
+        <table style="width:100%;border-collapse:collapse;font-size:0.78rem">
+          <thead><tr>
+            <th style="padding:5px 8px;text-align:left;background:var(--surface2);border:1px solid var(--border);color:var(--text3);font-size:0.7rem">Khoảng cách</th>
+            <th style="padding:5px 8px;text-align:center;background:var(--surface2);border:1px solid var(--border);color:var(--text3);font-size:0.7rem">f</th>
+            <th style="padding:5px 8px;text-align:left;background:var(--surface2);border:1px solid var(--border);color:var(--text3);font-size:0.7rem">Ghi chú</th>
+          </tr></thead><tbody>`;
+      r.recovery_guidance.forEach(g => {
+        html += `<tr>
+          <td style="padding:5px 8px;border:1px solid var(--border)">${g.interval}</td>
+          <td style="padding:5px 8px;border:1px solid var(--border);text-align:center;font-family:'JetBrains Mono',monospace;font-weight:600;color:var(--primary)">${g.f}</td>
+          <td style="padding:5px 8px;border:1px solid var(--border);color:var(--text2)">${g.note}</td>
+        </tr>`;
+      });
+      html += '</tbody></table></div>';
+    }
+
+    // Tài liệu tham khảo
+    if (r.refs && r.refs.length) {
+      html += `<div class="callout purple">
+        <span>📖</span>
+        <div><strong>Tài liệu tham khảo:</strong>
+        <ul style="margin-top:4px;padding-left:14px">
+        ${r.refs.map(s => `<li style="font-size:0.72rem;margin-bottom:3px;font-style:italic">${s}</li>`).join('')}
+        </ul></div></div>`;
+    }
+
+    document.getElementById('ri-oar-body').innerHTML = html;
+    showEl('ri-oar-detail');
+  } catch(e) { alert('Lỗi: ' + e.message); }
+  finally { setBtnLoading('btnRIRef', false); }
 }
 
 function clearRI() {
   document.getElementById('ri-courses').innerHTML = '';
   document.getElementById('ri-result').style.display = 'none';
+  document.getElementById('ri-oar-detail').style.display = 'none';
+  document.getElementById('ri-ref-box').style.display = 'none';
   courseCount = 0;
 }
+
 
 // ── Compare ───────────────────────────────────────────────────
 async function doCompare() {
